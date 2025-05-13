@@ -1,86 +1,104 @@
-let levelsData
-let currentLevel = 0
-let matrix = []
-let stepCount = 0
-let lastClicked = null
+const levelsData = [];
+let currentLevel = 0;
+let matrix = [];
+let stepCount = 0;
+let lastClicked = null;
 
-document.addEventListener('DOMContentLoaded', () => {
-  fetch('data.json')
-    .then(r => r.json())
-    .then(d => {
-      levelsData = d.levels
-      initControls()
-      loadLevel(0)
-    })
-})
-
-function initControls() {
-  const s = document.getElementById('level-select')
-  levelsData.forEach((l,i) => {
-    const o = document.createElement('option')
-    o.value = i
-    o.textContent = `Рівень ${i+1}`
-    s.appendChild(o)
-  })
-  s.addEventListener('change', () => loadLevel(+s.value))
-  document.getElementById('reset-btn')
-    .addEventListener('click', () => loadLevel(currentLevel))
-}
-
-function loadLevel(i) {
-  currentLevel = i
-  matrix = levelsData[i].matrix.map(r => r.slice())
-  stepCount = 0
-  lastClicked = null
-  updateDisplay()
-  renderGrid()
-}
-
-function onCellClick(e) {
-  const i = +e.currentTarget.dataset.i
-  const j = +e.currentTarget.dataset.j
-  const isDouble = lastClicked && lastClicked.i === i && lastClicked.j === j
-  [[i,j],[i-1,j],[i+1,j],[i,j-1],[i,j+1]]
-    .forEach(([x,y]) => toggleCell(x,y))
-  if (isDouble) {
-    stepCount--
-    lastClicked = null
-  } else {
-    stepCount++
-    lastClicked = {i,j}
-    if (matrix.flat().every(v=>v===0))
-      setTimeout(()=>alert(`Перемога за ${stepCount} кроків!`),100)
+// Ініціалізація після завантаження DOM
+document.addEventListener('DOMContentLoaded', async () => {
+  try {
+    // Завантаження даних із JSON
+    const response = await fetch('data.json');
+    if (!response.ok) throw new Error('Не вдалося завантажити data.json');
+    const data = await response.json();
+    Object.assign(levelsData, data.levels);
+    initControls();
+    loadLevel(0);
+  } catch (error) {
+    console.error('Помилка:', error);
+    alert('Не вдалося завантажити рівні. Перевірте підключення або файл data.json.');
   }
-  updateDisplay()
+});
+
+// Ініціалізація елементів керування
+function initControls() {
+  const select = document.getElementById('level-select');
+  levelsData.forEach((level, index) => {
+    const option = document.createElement('option');
+    option.value = index;
+    option.textContent = `Рівень ${index + 1}`;
+    select.appendChild(option);
+  });
+  select.addEventListener('change', () => loadLevel(+select.value));
+  document.getElementById('reset-btn').addEventListener('click', () => loadLevel(currentLevel));
 }
 
-function toggleCell(i,j) {
-  if (i<0||i>4||j<0||j>4) return
-  matrix[i][j] ^= 1
-  const c = document.querySelector(`[data-i="${i}"][data-j="${j}"]`)
-  c.classList.toggle('on')
-  c.classList.toggle('off')
+// Завантаження рівня
+function loadLevel(index) {
+  currentLevel = index;
+  // Копіюємо матрицю, щоб не змінювати оригінал
+  matrix = levelsData[index].matrix.map(row => [...row]);
+  stepCount = 0;
+  lastClicked = null;
+  updateDisplay();
+  renderGrid();
 }
 
+// Обробка кліку по клітинці
+function onCellClick(event) {
+  const { i, j } = event.currentTarget.dataset;
+  const row = +i;
+  const col = +j;
+  const isDouble = lastClicked && lastClicked.i === row && lastClicked.j === col;
+
+  // Перемикаємо клітинку та сусідів
+  [[row, col], [row - 1, col], [row + 1, col], [row, col - 1], [row, col + 1]].forEach(([x, y]) =>
+    toggleCell(x, y)
+  );
+
+  // Оновлюємо лічильник кроків
+  stepCount = isDouble ? stepCount - 1 : stepCount + 1;
+  lastClicked = isDouble ? null : { i: row, j: col };
+
+  // Перевірка на перемогу
+  if (matrix.flat().every(v => v === 0)) {
+    setTimeout(() => alert(`Перемога за ${stepCount} кроків!`), 100);
+  }
+
+  updateDisplay();
+}
+
+// Перемикання стану клітинки
+function toggleCell(row, col) {
+  if (row < 0 || row > 4 || col < 0 || col > 4) return;
+  matrix[row][col] ^= 1;
+  const cell = document.querySelector(`[data-i="${row}"][data-j="${col}"]`);
+  cell.classList.toggle('on');
+  cell.classList.toggle('off');
+}
+
+// Відображення сітки
 function renderGrid() {
-  const g = document.getElementById('grid')
-  g.innerHTML = ''
-  matrix.forEach((row,i) => {
-    const r = document.createElement('div')
-    r.className = 'row'
-    row.forEach((c,j) => {
-      const d = document.createElement('div')
-      d.className = c ? 'cell on' : 'cell off'
-      d.dataset.i = i
-      d.dataset.j = j
-      d.addEventListener('click', onCellClick)
-      r.appendChild(d)
-    })
-    g.appendChild(r)
-  })
+  const grid = document.getElementById('grid');
+  grid.innerHTML = '';
+  // Відображаємо матрицю у правильному порядку
+  matrix.forEach((row, rowIndex) => {
+    const rowElement = document.createElement('div');
+    rowElement.className = 'row';
+    row.forEach((cell, colIndex) => {
+      const cellElement = document.createElement('div');
+      cellElement.className = `cell ${cell ? 'on' : 'off'}`;
+      cellElement.dataset.i = rowIndex;
+      cellElement.dataset.j = colIndex;
+      cellElement.addEventListener('click', onCellClick);
+      rowElement.appendChild(cellElement);
+    });
+    grid.appendChild(rowElement);
+  });
 }
 
+// Оновлення відображення лічильників
 function updateDisplay() {
-  document.getElementById('step-count').textContent = stepCount
-  document.getElementById('min-steps').textContent = levelsData[currentLevel].minSteps
+  document.getElementById('step-count').textContent = stepCount;
+  document.getElementById('min-steps').textContent = levelsData[currentLevel].minSteps;
 }
