@@ -11,7 +11,7 @@
   height: 40px;
   border: 1px solid #333;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: background 0.2s, transform 0.1s;
 }
 .cell.on {
   background: yellow;
