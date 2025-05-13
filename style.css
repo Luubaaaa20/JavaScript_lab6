@@ -19,3 +19,6 @@
 .cell.off {
   background: #222;
 }
+.cell:active {
+  transform: translate(2px, 2px) scale(0.95);
+}
