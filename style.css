@@ -1,23 +1,57 @@
+body {
+  font-family: Arial, sans-serif;
+  background-color: #f4f4f4;
+  margin: 0;
+  padding: 20px;
+}
+
+.container {
+  max-width: 600px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+h1 {
+  color: #333;
+}
+
+#controls {
+  margin-bottom: 20px;
+}
+
+#controls select,
+#controls button {
+  padding: 8px;
+  margin: 0 10px;
+  font-size: 16px;
+}
+
 #grid {
   display: inline-block;
   margin-top: 20px;
 }
+
 .row {
   display: flex;
 }
+
 .cell {
-  width: 40px;
-  height: 40px;
+  width: 50px;
+  height: 50px;
   border: 1px solid #333;
   cursor: pointer;
   transition: background 0.2s, transform 0.1s;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
+
 .cell.on {
-  background: yellow;
+  background: #ffd700;
 }
+
 .cell.off {
-  background: #222;
+  background: #333;
 }
+
 .cell:active {
   transform: translate(2px, 2px) scale(0.95);
 }
