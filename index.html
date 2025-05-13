@@ -2,18 +2,21 @@
 <html lang="uk">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Lights Out</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <h1>Lights Out</h1>
-  <div id="controls">
-    <select id="level-select"></select>
-    <button id="reset-btn">Скинути</button>
-    <span>Кроків: <span id="step-count">0</span></span>
-    <span>Мінімум: <span id="min-steps">0</span></span>
+  <div class="container">
+    <h1>Lights Out</h1>
+    <div id="controls">
+      <select id="level-select"></select>
+      <button id="reset-btn">Скинути</button>
+      <span>Кроків: <span id="step-count">0</span></span>
+      <span>Мінімум: <span id="min-steps">0</span></span>
+    </div>
+    <div id="grid"></div>
   </div>
-  <div id="grid"></div>
   <script src="script.js"></script>
 </body>
 </html>
