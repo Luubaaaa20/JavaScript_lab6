@@ -3,21 +3,28 @@ let currentLevel = 0;
 let matrix = [];
 let stepCount = 0;
 let lastClicked = null;
+let timerInterval = null;
+let timeElapsed = 0;
 
+// Ініціалізація після завантаження DOM
 document.addEventListener('DOMContentLoaded', async () => {
   try {
     const response = await fetch('data.json');
-    if (!response.ok) throw new Error('Не вдалося завантажити data.json');
+    if (!response.ok) throw new Error(`Не вдалося завантажити data.json: ${response.status}`);
     const data = await response.json();
-    Object.assign(levelsData, data.levels);
+    if (!data.levels || !Array.isArray(data.levels)) throw new Error('Невірний формат data.json');
+    levelsData.splice(0, levelsData.length, ...data.levels);
     initControls();
-    loadLevel(0);
+    // Випадковий вибір початкового рівня
+    currentLevel = Math.floor(Math.random() * levelsData.length);
+    loadLevel(currentLevel);
   } catch (error) {
     console.error('Помилка:', error);
-    alert('Не вдалося завантажити рівні. Перевірте підключення або файл data.json.');
+    alert('Помилка завантаження рівнів. Перевірте файл data.json або консоль для деталей.');
   }
 });
 
+// Ініціалізація елементів керування
 function initControls() {
   const select = document.getElementById('level-select');
   levelsData.forEach((level, index) => {
@@ -27,18 +34,67 @@ function initControls() {
     select.appendChild(option);
   });
   select.addEventListener('change', () => loadLevel(+select.value));
+  document.getElementById('new-game-btn').addEventListener('click', generateNewGame);
+  document.getElementById('restart-btn').addEventListener('click', restartLevel);
   document.getElementById('reset-btn').addEventListener('click', () => loadLevel(currentLevel));
 }
 
+// Завантаження рівня
 function loadLevel(index) {
   currentLevel = index;
-  matrix = levelsData[index].matrix.map(row => [...row]);
+  matrix = levelsData[index].matrix.map(row => [...row]); // Копіюємо матрицю
   stepCount = 0;
   lastClicked = null;
+  stopTimer(); // Зупиняємо таймер
+  timeElapsed = 0; // Скидаємо час
   updateDisplay();
   renderGrid();
+  startTimer(); // Запускаємо таймер
 }
 
+// Генерація нової випадкової гри
+function generateNewGame() {
+  matrix = Array(5).fill().map(() => Array(5).fill().map(() => Math.round(Math.random())));
+  stepCount = 0;
+  lastClicked = null;
+  stopTimer(); // Зупиняємо таймер
+  timeElapsed = 0; // Скидаємо час
+  updateDisplay();
+  renderGrid();
+  startTimer(); // Запускаємо таймер
+}
+
+// Рестарт рівня (повернення до початкового стану)
+function restartLevel() {
+  matrix = levelsData[currentLevel].matrix.map(row => [...row]); // Повертаємо початкову матрицю
+  stepCount = 0;
+  lastClicked = null;
+  stopTimer(); // Зупиняємо таймер
+  timeElapsed = 0; // Скидаємо час
+  updateDisplay();
+  renderGrid();
+  startTimer(); // Запускаємо таймер
+}
+
+// Запуск таймера
+function startTimer() {
+  if (!timerInterval) {
+    timerInterval = setInterval(() => {
+      timeElapsed++;
+      updateDisplay();
+    }, 1000); // Оновлення кожну секунду
+  }
+}
+
+// Зупинка таймера
+function stopTimer() {
+  if (timerInterval) {
+    clearInterval(timerInterval);
+    timerInterval = null;
+  }
+}
+
+// Обробка кліку по клітинці
 function onCellClick(event) {
   const { i, j } = event.currentTarget.dataset;
   const row = +i;
@@ -53,12 +109,14 @@ function onCellClick(event) {
   lastClicked = isDouble ? null : { i: row, j: col };
 
   if (matrix.flat().every(v => v === 0)) {
-    setTimeout(() => alert(`Перемога за ${stepCount} кроків!`), 100);
+    stopTimer(); // Зупиняємо таймер при перемозі
+    setTimeout(() => alert(`Перемога за ${stepCount} кроків і ${timeElapsed} секунд!`), 100);
   }
 
   updateDisplay();
 }
 
+// Перемикання стану клітинки
 function toggleCell(row, col) {
   if (row < 0 || row > 4 || col < 0 || col > 4) return;
   matrix[row][col] ^= 1;
@@ -67,6 +125,7 @@ function toggleCell(row, col) {
   cell.classList.toggle('off');
 }
 
+// Відображення сітки
 function renderGrid() {
   const grid = document.getElementById('grid');
   grid.innerHTML = '';
@@ -85,7 +144,9 @@ function renderGrid() {
   });
 }
 
+// Оновлення відображення лічильників
 function updateDisplay() {
   document.getElementById('step-count').textContent = stepCount;
-  document.getElementById('min-steps').textContent = levelsData[currentLevel].minSteps;
+  document.getElementById('min-steps').textContent = levelsData[currentLevel].minSteps || 'N/A';
+  document.getElementById('timer').textContent = timeElapsed;
 }
