@@ -1,6 +1,5 @@
 #grid {
-  display: flex;
-  flex-direction: column-reverse;
+  display: inline-block;
   margin-top: 20px;
 }
 .row {
