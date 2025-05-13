@@ -1,12 +1,11 @@
 #grid {
-  display: inline-block;
+  display: flex;
+  flex-direction: column-reverse;
   margin-top: 20px;
 }
-
 .row {
   display: flex;
 }
-
 .cell {
   width: 40px;
   height: 40px;
@@ -14,11 +13,9 @@
   cursor: pointer;
   transition: background 0.2s;
 }
-
 .cell.on {
   background: yellow;
 }
-
 .cell.off {
   background: #222;
 }
