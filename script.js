@@ -6,7 +6,6 @@ let lastClicked = null;
 let timerInterval = null;
 let timeElapsed = 0;
 
-// Ініціалізація після завантаження DOM
 document.addEventListener('DOMContentLoaded', async () => {
   try {
     const response = await fetch('data.json');
@@ -15,7 +14,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (!data.levels || !Array.isArray(data.levels)) throw new Error('Невірний формат data.json');
     levelsData.splice(0, levelsData.length, ...data.levels);
     initControls();
-    // Випадковий вибір початкового рівня
     currentLevel = Math.floor(Math.random() * levelsData.length);
     loadLevel(currentLevel);
   } catch (error) {
@@ -24,7 +22,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 });
 
-// Ініціалізація елементів керування
 function initControls() {
   const select = document.getElementById('level-select');
   levelsData.forEach((level, index) => {
@@ -39,54 +36,49 @@ function initControls() {
   document.getElementById('reset-btn').addEventListener('click', () => loadLevel(currentLevel));
 }
 
-// Завантаження рівня
 function loadLevel(index) {
   currentLevel = index;
-  matrix = levelsData[index].matrix.map(row => [...row]); // Копіюємо матрицю
+  matrix = levelsData[index].matrix.map(row => [...row]); 
   stepCount = 0;
   lastClicked = null;
-  stopTimer(); // Зупиняємо таймер
-  timeElapsed = 0; // Скидаємо час
+  stopTimer(); 
+  timeElapsed = 0; 
   updateDisplay();
   renderGrid();
-  startTimer(); // Запускаємо таймер
+  startTimer(); 
 }
 
-// Генерація нової випадкової гри
 function generateNewGame() {
   matrix = Array(5).fill().map(() => Array(5).fill().map(() => Math.round(Math.random())));
   stepCount = 0;
   lastClicked = null;
-  stopTimer(); // Зупиняємо таймер
-  timeElapsed = 0; // Скидаємо час
+  stopTimer(); 
+  timeElapsed = 0; 
   updateDisplay();
   renderGrid();
-  startTimer(); // Запускаємо таймер
+  startTimer(); 
 }
 
-// Рестарт рівня (повернення до початкового стану)
 function restartLevel() {
   matrix = levelsData[currentLevel].matrix.map(row => [...row]); // Повертаємо початкову матрицю
   stepCount = 0;
   lastClicked = null;
-  stopTimer(); // Зупиняємо таймер
-  timeElapsed = 0; // Скидаємо час
+  stopTimer(); 
+  timeElapsed = 0; 
   updateDisplay();
   renderGrid();
-  startTimer(); // Запускаємо таймер
+  startTimer(); 
 }
 
-// Запуск таймера
 function startTimer() {
   if (!timerInterval) {
     timerInterval = setInterval(() => {
       timeElapsed++;
       updateDisplay();
-    }, 1000); // Оновлення кожну секунду
+    }, 1000); 
   }
 }
 
-// Зупинка таймера
 function stopTimer() {
   if (timerInterval) {
     clearInterval(timerInterval);
@@ -94,7 +86,6 @@ function stopTimer() {
   }
 }
 
-// Обробка кліку по клітинці
 function onCellClick(event) {
   const { i, j } = event.currentTarget.dataset;
   const row = +i;
@@ -116,7 +107,6 @@ function onCellClick(event) {
   updateDisplay();
 }
 
-// Перемикання стану клітинки
 function toggleCell(row, col) {
   if (row < 0 || row > 4 || col < 0 || col > 4) return;
   matrix[row][col] ^= 1;
@@ -125,7 +115,6 @@ function toggleCell(row, col) {
   cell.classList.toggle('off');
 }
 
-// Відображення сітки
 function renderGrid() {
   const grid = document.getElementById('grid');
   grid.innerHTML = '';
@@ -144,7 +133,6 @@ function renderGrid() {
   });
 }
 
-// Оновлення відображення лічильників
 function updateDisplay() {
   document.getElementById('step-count').textContent = stepCount;
   document.getElementById('min-steps').textContent = levelsData[currentLevel].minSteps || 'N/A';
