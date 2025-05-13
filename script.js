@@ -2,6 +2,7 @@ let levelsData;
 let currentLevel = 0;
 let matrix = [];
 let stepCount = 0;
+let lastClicked = null;
 
 document.addEventListener('DOMContentLoaded', () => {
   fetch('data.json')
@@ -31,6 +32,7 @@ function loadLevel(levelIndex) {
   currentLevel = levelIndex;
   matrix = levelsData[levelIndex].matrix.map(row => row.slice());
   stepCount = 0;
+  lastClicked = null;                    // скидати історію кліків
   document.getElementById('step-count').textContent = stepCount;
   document.getElementById('min-steps').textContent = levelsData[levelIndex].minSteps;
   renderGrid();
@@ -57,12 +59,24 @@ function renderGrid() {
 function onCellClick(evt) {
   const i = +evt.currentTarget.dataset.i;
   const j = +evt.currentTarget.dataset.j;
+
+  const isDouble = lastClicked
+    && lastClicked.i === i
+    && lastClicked.j === j;
+
   [[i,j],[i-1,j],[i+1,j],[i,j-1],[i,j+1]].forEach(([x,y]) => toggleCell(x,y));
-  stepCount++;
-  document.getElementById('step-count').textContent = stepCount;
-  if (checkWin()) {
-    setTimeout(() => alert(`Перемога за ${stepCount} кроків!`), 100);
+
+  if (isDouble) {
+    lastClicked = null;
+  } else {
+    stepCount++;
+    lastClicked = { i, j };
+    if (checkWin()) {
+      setTimeout(() => alert(`Перемога за ${stepCount} кроків!`), 100);
+    }
   }
+
+  document.getElementById('step-count').textContent = stepCount;
 }
 
 function toggleCell(i, j) {
